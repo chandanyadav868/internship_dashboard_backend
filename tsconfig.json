@@ -8,7 +8,7 @@
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
     "module": "esnext",
-    "target": "es2024",
+    "target": "es2020",
     // For nodejs:
     "lib": ["esnext"],
     // "types": ["node"], // if you want to include specific types then by commenting out include in this, if want to include all types then comment out this
@@ -22,6 +22,12 @@
     // Stricter Typechecking Options
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
+
+    // file import set
+    "baseUrl": "./src",
+    "paths": {
+      "@/*":["*"]
+    },
 
     // Style Options
     // "noImplicitReturns": true,
@@ -39,6 +45,9 @@
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true,
+
+    "allowSyntheticDefaultImports": true,
+    "moduleResolution": "node"
   },
   "include": ["src/**/*"]
 }
