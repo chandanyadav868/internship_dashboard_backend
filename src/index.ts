@@ -19,5 +19,5 @@ databaseConnection()
 
 })
 .catch((error)=>{
-    console.log(`Error in Mongodb Connection:- ${error}`);
+    console.log(`Error in Mongodb Connection:- ${error.message}`);
 })

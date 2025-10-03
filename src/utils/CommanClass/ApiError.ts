@@ -6,13 +6,13 @@ interface ApiErrorProps {
     error: string | unknown
 }
 
-class Api_Error extends Error {
+class Api_Error {
     message: string = '';
     stack: string = ''
     status: number = 500
     error: string | unknown = ''
     constructor({ message, error, stack, status }: ApiErrorProps) {
-        super(message)
+        // super(message)
         this.message = message;
         this.error = error;
         this.stack = stack??"";

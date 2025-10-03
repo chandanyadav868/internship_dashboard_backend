@@ -1,11 +1,17 @@
 import { Api_Error } from "@/utils/CommanClass/ApiError";
 import { connect } from "mongoose";
+import dotenv from "dotenv";
+
+// this is setup for loading Env variable
+dotenv.config({
+    path:".env"
+})
 
 const mongodbUrl = process.env.MONGODB_URL
 const databaseConnection = async () => {
     try {
         const connection = await connect(`${mongodbUrl}`, {
-            dbName: 'intern_dashboard',
+            dbName: 'intern_dashboard'
         });
 
         return connection
