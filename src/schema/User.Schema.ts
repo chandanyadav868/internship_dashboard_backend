@@ -1,5 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import bcrypt from "bcryptjs";
+import PostSchema from "./Post.schema";
 
 export interface UserSchemaProps {
     _id?: string;
@@ -46,7 +47,7 @@ userSchema.pre("deleteOne", { document: false, query: true }, async function (ne
     // this method will extract passed object in deleteOne filtring params
     const filter = this.getFilter();
     const userId = filter._id;
-    // await UserSchema.deleteOne({_id:userId});
+    await PostSchema.deleteMany({userId});
     next();
 })
 

@@ -1,6 +1,7 @@
 import express from "express"
 import userRouter from "@/routes/User.route"
 import healthRouter from "@/routes/HealthCheck.route"
+import postRouter from "@/routes/Post.route"
 import cookieparser from "cookie-parser"
 
 // express methods tranfer all its methods on app, initialised
@@ -15,7 +16,8 @@ app.use(express.urlencoded({extended:true}))
 app.use(cookieparser())
 
 app.use("/user",userRouter);
-app.use("/health-checkup",healthRouter)
+app.use("/health-checkup",healthRouter);
+app.use("/post",postRouter)
 
 
 export { app }
