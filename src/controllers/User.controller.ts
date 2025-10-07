@@ -6,6 +6,7 @@ import * as z from "zod";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import mongoose from "mongoose";
 
 const registerUser = z.object({
     email: z.email(),
@@ -31,14 +32,14 @@ const accessToken_refreshToken = async (payload: UserSchemaProps) => {
 
     const accessToken = jwt.sign({ _id: payload._id }, secretJWT, {
         algorithm: "HS256",
-        expiresIn: "15m"
+        expiresIn: "1m"
     });
 
     await UserSchema.findOneAndUpdate(
         { _id: payload._id },
         {
             $set: {
-                refereshToken: refreshToken
+                refreshToken: refreshToken
             },
         },
         {
@@ -53,10 +54,39 @@ const getUser = async (req: Request, res: Response) => {
     try {
         const { userId } = req;
         userIdCheck.parse({ userId });
-        const userExisting = await UserSchema.findOne({ _id: userId }).select("-password -refereshToken -__v");
+        const monggooseId = new mongoose.Types.ObjectId(userId)
+        const userExisting = await UserSchema.aggregate([
+            {
+                $match: {
+                    _id: monggooseId
+                }
+            },
+            {
+                $lookup: {
+                    from: "posts",
+                    localField: "_id",
+                    foreignField: "userId",
+                    as: "posts"
+                }
+            },
+            {
+                $addFields: {
+                    posts: {
+                        $size: "$posts"
+                    }
+                }
+            },
+            {
+                $project: {
+                    password: 0,
+                    refreshToken: 0,
+                    __v: 0
+                }
+            }
+        ])
 
         return res.status(200).json(new Api_Response({
-            data: userExisting,
+            data: userExisting[0],
             message: "Successfully User Get",
             status: 200
         }))
@@ -89,30 +119,47 @@ const loginController = async (req: Request, res: Response) => {
         const { email, password } = req.body;
         registerUser.parse({ email, password });
 
-        const existingUser = await UserSchema.findOne({ email }).lean();
+        const existingUser = await UserSchema.findOne({ email }).select("-refereshToken -__v").lean();
         if (!existingUser) {
             throw new Error("User does not exist")
         }
 
-        const isPasswordCorrect = bcrypt.compare(password, existingUser.password);
+        const isPasswordCorrect = await bcrypt.compare(password, existingUser.password);
         if (!isPasswordCorrect) {
             throw new Error("Credentials not correct")
         }
 
-        const { accessToken } = await accessToken_refreshToken(existingUser);
+        const { accessToken, refreshToken } = await accessToken_refreshToken(existingUser);
 
         const options: CookieOptions = {
             path: "/",
             httpOnly: true,
-            maxAge: 1000 * 60 * 60 * 15, // 15m
-            expires: new Date(Date.now() + 900000)
+            maxAge: 1000 * 60 * 60 * 60, // 1h
+            expires: new Date(Date.now() + (1000 * 60 * 60 * 60))
         }
 
-        res.cookie("accessToken", accessToken, options)
+        res.cookie("accessToken", accessToken, options);
+
+        res.cookie("refreshToken", refreshToken, {
+            httpOnly: true,     // ❗ Prevent JS access
+            secure: false,       // ❗ Send only over HTTPS
+            sameSite: "strict", // ❗ Prevent CSRF
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
+
+        const data: Record<string, any> = {}
+
+        for (const [key, value] of Object.entries(existingUser)) {
+            const keyMatching = ["password", "refereshToken", "__v"];
+            if (keyMatching.includes(key)) {
+                continue
+            }
+            data[key] = value
+        }
 
         res.json({
             ...new Api_Response({
-                data: null,
+                data: { ...data },
                 message: "Successfully user logedin",
                 status: 200
             })
@@ -161,7 +208,7 @@ const registerController = async (req: Request, res: Response) => {
         console.log(userResgister);
 
         res.status(200).json(new Api_Response({
-            data: userResgister,
+            data: null,
             message: "Successfully User register",
             status: 200
         }))
@@ -208,6 +255,7 @@ const logoutController = async (req: Request, res: Response) => {
 
         // change accessToken value to empty because user have logout 
         res.cookie("accessToken", "", {})
+        res.cookie("refreshToken", "", {})
 
         return res.json({
             ...new Api_Response({
@@ -263,7 +311,7 @@ const userUpdateController = async (req: Request, res: Response) => {
         ).select("-password -refereshToken -__v").lean();
 
         return res.status(200).json(new Api_Response({
-            data: null,
+            data: { ...userExisting },
             message: "Successfully updated",
             status: 200
         }))

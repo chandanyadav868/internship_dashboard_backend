@@ -10,7 +10,7 @@
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
     "module": "esnext",
-    "target": "es2020",
+    "target": "es2023",
     // For nodejs:
     "lib": ["esnext"],
     // "types": ["node"], // if you want to include specific types then by commenting out include in this, if want to include all types then comment out this

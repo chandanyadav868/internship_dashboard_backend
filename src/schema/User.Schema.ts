@@ -8,7 +8,7 @@ export interface UserSchemaProps {
     email: string;
     password: string;
     avatar: string;
-    refereshToken: string;
+    refreshToken: string;
 }
 
 const userSchema = new Schema<UserSchemaProps>({
@@ -28,7 +28,7 @@ const userSchema = new Schema<UserSchemaProps>({
     avatar: {
         type: String
     },
-    refereshToken: {
+    refreshToken: {
         type: String
 
     }
