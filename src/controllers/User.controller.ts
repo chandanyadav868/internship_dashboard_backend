@@ -119,7 +119,7 @@ const loginController = async (req: Request, res: Response) => {
         const { email, password } = req.body;
         registerUser.parse({ email, password });
 
-        const existingUser = await UserSchema.findOne({ email }).select("-refereshToken -__v").lean();
+        const existingUser = await UserSchema.findOne({ email }).select("-refreshToken -__v").lean();
         if (!existingUser) {
             throw new Error("User does not exist")
         }
@@ -193,7 +193,7 @@ const registerController = async (req: Request, res: Response) => {
     try {
         // console.log(req);
         const { email, password } = await req.body;
-        console.log(email, password);
+        // console.log(email, password);
 
         // this will validate given input is valide or not if not then this function will throw error and that error will run the catch function
         registerUser.parse({ email, password });
@@ -205,12 +205,12 @@ const registerController = async (req: Request, res: Response) => {
 
         const userResgister = await UserSchema.create({ email, password: password });
 
-        console.log(userResgister);
+        // console.log(userResgister);
 
         res.status(200).json(new Api_Response({
             data: null,
             message: "Successfully User register",
-            status: 200
+            status: 201
         }))
 
     } catch (error) {
@@ -308,7 +308,7 @@ const userUpdateController = async (req: Request, res: Response) => {
             {
                 new: true
             }
-        ).select("-password -refereshToken -__v").lean();
+        ).select("-password -refreshToken -__v").lean();
 
         return res.status(200).json(new Api_Response({
             data: { ...userExisting },

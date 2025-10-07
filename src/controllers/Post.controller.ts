@@ -82,7 +82,7 @@ const updatePost = async (req: Request, res: Response) => {
             postCreatingData[key] = element
         }
 
-        postZodSchema.parse({ ...postCreatingData });
+        postZodSchema.parse({ ...postCreatingData });        
 
         const updatingPost = await PostSchema.findOneAndUpdate(
             {
@@ -128,7 +128,7 @@ const getPosts = async (req: Request, res: Response) => {
     try {
         const { userId } = req
         console.log("userId:- ", userId);
-        const objectId = new mongoose.Types.ObjectId(userId);
+        const objectId = mongooseObjectId(userId);
 
         // const posts = await PostSchema.find({ userId }).limit(5).sort({ createdAt: "asc" });
         // console.log("posts:- ", posts);
@@ -284,7 +284,7 @@ const LikesDislikePost = async (req: Request, res: Response) => {
         const { userId } = req;
         const { postId } = req.params;
         const likesandDislike = req.body
-        console.log("likesandDislike:- ", likesandDislike);
+        // console.log("likesandDislike:- ", likesandDislike);
 
         const likedOrDislikedDocs = await LikesDislikesSchema.findOneAndUpdate(
             { userId, postId },
@@ -299,7 +299,7 @@ const LikesDislikePost = async (req: Request, res: Response) => {
                 upsert: true
             }
         );
-        console.log("posts:- ", likedOrDislikedDocs);
+        // console.log("posts:- ", likedOrDislikedDocs);
 
         return res.status(200).json(new Api_Response({
             data: likedOrDislikedDocs,
